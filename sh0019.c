@@ -69,6 +69,7 @@ static void command_append_arg(command* c, char* word) {
 //       this will require TWO calls to `setpgid`.
 
 pid_t start_command(command* c, pid_t pgid) {
+    //testing stuff
     (void) pgid;
     // Your code here!
     fprintf(stderr, "start_command not done yet\n");
