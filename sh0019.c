@@ -15,8 +15,10 @@ struct command {
     pid_t pid;     // process ID running this command, -1 if none
     int backgroundProcess;
     int chainCommandWithSemi;
+    command* nextCommand;
 };
-
+command *listHead=NULL;
+command *listTail=NULL;
 
 // command_alloc()
 //    Allocate and return a new command structure.
@@ -28,6 +30,16 @@ static command* command_alloc(void) {
     c->pid = -1;
     c->backgroundProcess = 0;
     c->chainCommandWithSemi = 0;
+
+    if(listHead==NULL) {
+        listHead=c;
+        listTail=c;
+    }
+    else {
+        listTail->nextCommand=c;
+        listTail=c;
+    }
+
     return c;
 }
 
@@ -36,11 +48,17 @@ static command* command_alloc(void) {
 //    Free command structure `c`, including all its words.
 
 static void command_free(command* c) {
-    for (int i = 0; i != c->argc; ++i) {
-        free(c->argv[i]);
+
+    while (listHead != NULL) {
+        for (int i = 0; i != listHead->argc; ++i) {
+            free(listHead->argv[i]);
+            }
+            free(c->argv);
+            free(c);
+            listHead = listHead -> nextCommand;
+            c = listHead;
     }
-    free(c->argv);
-    free(c);
+
 }
 
 
@@ -81,8 +99,6 @@ pid_t start_command(command* c, pid_t pgid) {
     int status;
 
         childFork = fork();
-    
-
         if (childFork == 0) {
              execvp(c->argv[0], c->argv);
          }
@@ -91,7 +107,8 @@ pid_t start_command(command* c, pid_t pgid) {
         }
 
         
-    waitpid(c->pid, &status, 0);
+            waitpid(c->pid, &status, 0);
+
     // Your code here!
     // fprintf(stderr, "start_command not done yet\n");
     return c->pid;
@@ -120,19 +137,36 @@ pid_t start_command(command* c, pid_t pgid) {
 void run_list(command* c) {
     int child_status;
     int childFork;
-    
-    if (c->backgroundProcess == 1) {
-        childFork = fork();
-         if (childFork == 0) {
-            start_command(c, 0);
-         }
-         else if (childFork > 0) {
-            return; // Parent basically returns here with childs id
+    command* traverseList = c;
+    while (traverseList != NULL) {
+        if (c->backgroundProcess == 1) {
+            childFork = fork();
+             if (childFork == 0) {
+                start_command(c, 0);
+             }
+             else if (childFork > 0) {
+                return; // Parent basically returns here with childs id
+            }
         }
+        else {
+            start_command(traverseList, 0);
+            // waitpid(c->pid, &child_status, 0);
+        }
+        traverseList = traverseList->nextCommand;
     }
-    else {
-        start_command(c, 0);
-    }
+        // if (c->backgroundProcess == 1) {
+        //     childFork = fork();
+        //      if (childFork == 0) {
+        //         start_command(c, 0);
+        //      }
+        //      else if (childFork > 0) {
+        //         return; // Parent basically returns here with childs id
+        //     }
+        // }
+        // else {
+        //     start_command(traverseList, 0);
+        //     // waitpid(c->pid, &child_status, 0);
+        // }
     // fprintf(stderr, "run_command not done yet\n");
 }
 
@@ -143,28 +177,36 @@ void run_list(command* c) {
 void eval_line(const char* s) {
     int type;
     char* token;
-
+    int flag = 0;
     // fprintf(stderr, "current test string is %s\n", s );
     command* c = command_alloc();
     while ((s = parse_shell_token(s, &type, &token)) != NULL) {
         // printf("token is %s \n", token);
-     if( *token != '&' && *token != ';') {
-         command_append_arg(c, token);
-
+        if(*token != '&' && *token != ';') {
+         command_append_arg(listTail, token);
         }
-        if (*token == ';') {
+        else if (*token == ';') {
             c->chainCommandWithSemi = 1;
+            command_alloc();
         }
-        if (*token == '&') {
+        else if (*token == '&') {
             c->backgroundProcess = 1;
         }
 
     }
     // execute it
-    if (c->argc) {
-        run_list(c);
-    }
-    command_free(c);
+
+    // while (c->nextCommand != NULL) {
+    //     int counter = 0;
+    //     while(counter < c->argc) {
+    //         fprintf(stderr, " c: %d  is: %s", counter, c->argv[counter]);
+    //         counter++;
+    //     }
+
+    //     c = listHead->nextCommand;
+    // }
+    run_list(listHead);
+    command_free(listHead);
 }
 
 
