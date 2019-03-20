@@ -13,6 +13,8 @@ struct command {
     int argc;      // number of arguments
     char** argv;   // arguments, terminated by NULL
     pid_t pid;     // process ID running this command, -1 if none
+    int backgroundProcess;
+    int chainCommandWithSemi;
 };
 
 
@@ -24,6 +26,8 @@ static command* command_alloc(void) {
     c->argc = 0;
     c->argv = NULL;
     c->pid = -1;
+    c->backgroundProcess = 0;
+    c->chainCommandWithSemi = 0;
     return c;
 }
 
@@ -68,22 +72,31 @@ static void command_append_arg(command* c, char* word) {
 //       its own process group (if `pgid == 0`). To avoid race conditions,
 //       this will require TWO calls to `setpgid`.
 
+
+
 pid_t start_command(command* c, pid_t pgid) {
     //testing stuff
     (void) pgid;
+    pid_t childFork;
+    int status;
 
+        childFork = fork();
     
 
-    if (fork() == 0) {
-        execvp(c->argv[0], c->argv);
-        c->pid = getpid();
-        return c->pid;
-    }
+        if (childFork == 0) {
+             execvp(c->argv[0], c->argv);
+         }
+         else if (childFork < 0) {
+            exit(-1);
+        }
 
+        
+    waitpid(c->pid, &status, 0);
     // Your code here!
     // fprintf(stderr, "start_command not done yet\n");
     return c->pid;
-}
+   }
+
 
 
 // run_list(c)
@@ -105,10 +118,21 @@ pid_t start_command(command* c, pid_t pgid) {
 //       - Call `claim_foreground(0)` once the pipeline is complete.
 
 void run_list(command* c) {
-    start_command(c, 0);
     int child_status;
-    waitpid(c->pid, &child_status, 0);
- 
+    int childFork;
+    
+    if (c->backgroundProcess == 1) {
+        childFork = fork();
+         if (childFork == 0) {
+            start_command(c, 0);
+         }
+         else if (childFork > 0) {
+            return; // Parent basically returns here with childs id
+        }
+    }
+    else {
+        start_command(c, 0);
+    }
     // fprintf(stderr, "run_command not done yet\n");
 }
 
@@ -119,14 +143,23 @@ void run_list(command* c) {
 void eval_line(const char* s) {
     int type;
     char* token;
-    // Your code here!
 
-    // build the command
+    // fprintf(stderr, "current test string is %s\n", s );
     command* c = command_alloc();
     while ((s = parse_shell_token(s, &type, &token)) != NULL) {
-        command_append_arg(c, token);
-    }
+        // printf("token is %s \n", token);
+     if( *token != '&' && *token != ';') {
+         command_append_arg(c, token);
 
+        }
+        if (*token == ';') {
+            c->chainCommandWithSemi = 1;
+        }
+        if (*token == '&') {
+            c->backgroundProcess = 1;
+        }
+
+    }
     // execute it
     if (c->argc) {
         run_list(c);
