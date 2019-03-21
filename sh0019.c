@@ -15,6 +15,7 @@ struct command {
     pid_t pid;     // process ID running this command, -1 if none
     int backgroundProcess;
     int chainCommandWithSemi;
+    int commandStatus;
     command* nextCommand;
 };
 command *listHead=NULL;
@@ -30,7 +31,7 @@ static command* command_alloc(void) {
     c->pid = -1;
     c->backgroundProcess = 0;
     c->chainCommandWithSemi = 0;
-
+    c->commandStatus = -1;
     if(listHead==NULL) {
         listHead=c;
         listTail=c;
@@ -53,10 +54,10 @@ static void command_free(command* c) {
         for (int i = 0; i != listHead->argc; ++i) {
             free(listHead->argv[i]);
             }
-            free(c->argv);
-            free(c);
-            listHead = listHead -> nextCommand;
-            c = listHead;
+        free(c->argv);
+        free(c);
+        listHead = listHead -> nextCommand;
+        c = listHead;
     }
 
 }
@@ -107,7 +108,7 @@ pid_t start_command(command* c, pid_t pgid) {
         }
 
         
-            waitpid(c->pid, &status, 0);
+            // waitpid(c->pid, &status, 0);
 
     // Your code here!
     // fprintf(stderr, "start_command not done yet\n");
@@ -135,22 +136,26 @@ pid_t start_command(command* c, pid_t pgid) {
 //       - Call `claim_foreground(0)` once the pipeline is complete.
 
 void run_list(command* c) {
-    int child_status;
+    int status;
     int childFork;
     command* traverseList = c;
     while (traverseList != NULL) {
-        if (c->backgroundProcess == 1) {
-            childFork = fork();
-             if (childFork == 0) {
-                start_command(c, 0);
-             }
-             else if (childFork > 0) {
-                return; // Parent basically returns here with childs id
-            }
+        if (traverseList->backgroundProcess == 1) {
+            //  if (childFork == 0) {
+                start_command(traverseList, 0);
+
+            //  }
+            //  else if (childFork > 0) {
+
+            //     return; // Parent basically returns here with childs id
+            // }
         }
         else {
             start_command(traverseList, 0);
-            // waitpid(c->pid, &child_status, 0);
+
+            waitpid(c->pid, status, 0);
+            traverseList->commandStatus = status;
+
         }
         traverseList = traverseList->nextCommand;
     }
@@ -182,29 +187,43 @@ void eval_line(const char* s) {
     command* c = command_alloc();
     while ((s = parse_shell_token(s, &type, &token)) != NULL) {
         // printf("token is %s \n", token);
-        if(*token != '&' && *token != ';') {
+        if(type != TOKEN_BACKGROUND && type != TOKEN_SEQUENCE && type != TOKEN_AND && type != TOKEN_OR) {
          command_append_arg(listTail, token);
         }
-        else if (*token == ';') {
-            c->chainCommandWithSemi = 1;
+        else if (type == TOKEN_SEQUENCE || type == TOKEN_OR || type == TOKEN_AND) {
+            // listTail->chainCommandWithSemi = 1;
+
             command_alloc();
+            // listTail->backgroundProcess = 1;
         }
-        else if (*token == '&') {
-            c->backgroundProcess = 1;
+        else if (type == TOKEN_BACKGROUND) {
+             // command_alloc();
+
+            listTail->backgroundProcess = 1;
+
+            while (c->nextCommand != NULL) {
+
+                c->backgroundProcess = 1;
+                c = listHead ->nextCommand;
+            }
+
         }
 
     }
+
+
     // execute it
 
-    // while (c->nextCommand != NULL) {
+    // while (c != NULL) {
     //     int counter = 0;
     //     while(counter < c->argc) {
-    //         fprintf(stderr, " c: %d  is: %s", counter, c->argv[counter]);
+    //         fprintf(stderr, "%d %s\n", counter, c->argv[counter]);
     //         counter++;
     //     }
 
     //     c = listHead->nextCommand;
     // }
+
     run_list(listHead);
     command_free(listHead);
 }
