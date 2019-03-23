@@ -1,5 +1,5 @@
 ## COMP0019 CW5 Grade Report
-Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
+Report for commit SHA: da936c7d5679c0fe5fda47398f232c342c70fc1c
 
 ### Output
 
@@ -34,7 +34,7 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
     Test SIMPLE3: passed
     Test SIMPLE4: passed
     Test BG1: passed
-    Test BG2: FAILED in 0.210 sec
+    Test BG2: FAILED in 0.207 sec
         command  `sh -c "sleep 0.2; test -r fBG2b.txt && rm -f fBG2a.txt" &`
         expected `Still here`
         got      `cat: fBG2a.txt: No such file or directory`
@@ -44,11 +44,11 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
     Test LIST3: passed
     Test LIST4: passed
     Test LIST5: passed
-    Test LIST6: FAILED in 0.217 sec
+    Test LIST6: FAILED in 0.241 sec
         command  `../sh0019 -q cmdLIST6.sh &`
         expected `Hello 1`
         got      `Hello 0`
-    Test LIST7: FAILED in 0.001 sec
+    Test LIST7: FAILED in 0.003 sec
         command  `../sh0019 -q cmdLIST7.sh`
         expected `Hello Bye 1`
         got      `Bye Hello 1`
@@ -59,52 +59,52 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
     Test COND4: passed
     Test COND5: passed
     Test COND6: passed
-    Test COND7: FAILED in 0.005 sec
+    Test COND7: FAILED in 0.002 sec
         command  `echo Start && false || false && echo Bad`
         expected `Start`
         got      `Start Bad`
-    Test COND8: FAILED in 0.105 sec
+    Test COND8: FAILED in 0.110 sec
         command  `sleep 0.2 && echo Second & sleep 0.1 && echo First`
         expected `First Second`
         got      `First`
     Test COND9: passed
-    Test COND10: FAILED in 0.007 sec
+    Test COND10: FAILED in 0.003 sec
         command  `false && echo no && echo no && echo no && echo no || echo yes`
         expected `yes`
         got      `no no no no yes`
-    Test COND11: FAILED in 0.007 sec
+    Test COND11: FAILED in 0.003 sec
         command  `true || echo no || echo no || echo no || echo no && echo yes`
         expected `yes`
         got      `no no no no yes`
-    Test PIPE1: FAILED in 0.002 sec
+    Test PIPE1: FAILED in 0.001 sec
         command  `echo Pipe | wc -c`
         expected `5`
         got      `Pipe | wc -c`
-    Test PIPE2: FAILED in 0.002 sec
+    Test PIPE2: FAILED in 0.001 sec
         command  `echo Good | grep -n G`
         expected `1:Good`
         got      `Good | grep -n G`
-    Test PIPE3: FAILED in 0.002 sec
+    Test PIPE3: FAILED in 0.001 sec
         command  `echo Bad | grep -c G`
         expected `0`
         got      `Bad | grep -c G`
-    Test PIPE4: FAILED in 0.002 sec
+    Test PIPE4: FAILED in 0.001 sec
         command  `echo Line | cat | wc -l`
         expected `1`
         got      `Line | cat | wc -l`
-    Test PIPE5: FAILED in 0.007 sec
+    Test PIPE5: FAILED in 0.004 sec
         command  `../sh0019 -q cmdPIPE5.sh; ps | grep sleep | grep -v grep | head -n 1 | wc -l`
         expected `Hello Bye 1`
         got      `Bye Hello error: garbage option Usage: ps [options] Try 'ps --help <simple|l...`
-    Test PIPE6: FAILED in 0.002 sec
+    Test PIPE6: FAILED in 0.001 sec
         command  `echo GoHangASalamiImALasagnaHog | rev | rev | rev`
         expected `goHangasaLAmIimalaSAgnaHoG`
         got      `GoHangASalamiImALasagnaHog | rev | rev | rev`
-    Test PIPE7: FAILED in 0.016 sec
+    Test PIPE7: FAILED in 0.014 sec
         command  `rev fPIPE7.txt | rev`
         expected `goHangasaLAmIimalaSAgnaHoG`
         got      `rev: cannot open |: No such file or directory rev: cannot open rev: No such ...`
-    Test PIPE8: FAILED in 0.002 sec
+    Test PIPE8: FAILED in 0.001 sec
         command  `cat fPIPE8.txt | tr [A-Z] [a-z] | /usr/bin/md5sum | tr -d -`
         expected `8e21d03f7955611616bcd2337fe9eac1`
         got      `cat: invalid option -- 'd' Try 'cat --help' for more information.`
@@ -112,7 +112,7 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
         command  `rev fPIPE9.txt | /usr/bin/md5sum | tr [a-z] [A-Z] | tr -d -`
         expected `502B109B37EC769342948826736FA063`
         got      `rev: invalid option -- 'd' Usage: rev [options] [file ...] Reverse lines cha...`
-    Test PIPE10: FAILED in 0.206 sec
+    Test PIPE10: FAILED in 0.204 sec
         command  `sleep 2 & sleep 0.2; ps T | grep sleep | grep -v grep | head -n 1 | wc -l`
         expected `1`
         got      `error: garbage option Usage: ps [options] Try 'ps --help <simple|list|output...`
@@ -124,7 +124,7 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
         command  `echo Ignored | echo Desired`
         expected `Desired`
         got      `Ignored | echo Desired`
-    Test PIPE13: FAILED in 0.189 sec
+    Test PIPE13: FAILED in 0.177 sec
         command  `../sh0019 -q cmdPIPE13.sh &`
         expected `Hello 1`
         got      `Hello error: garbage option Usage: ps [options] Try 'ps --help <simple|list|...`
@@ -133,11 +133,11 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
         command  `true | echo True || echo False`
         expected `True`
         got      ``
-    Test PIPE16: FAILED in 0.004 sec
+    Test PIPE16: FAILED in 0.003 sec
         command  `false | echo True || echo False`
         expected `True`
         got      `False`
-    Test PIPE17: FAILED in 0.003 sec
+    Test PIPE17: FAILED in 0.002 sec
         command  `echo Hello | grep -q X || echo NoXs`
         expected `NoXs`
         got      `Hello | grep -q X`
@@ -162,7 +162,7 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
         expected `expected`
         got      `unexpected vnexpected | tr v u expected`
     Test PIPE23: KILLED by segmentation fault
-      FAILED in 0.323 sec
+      FAILED in 0.320 sec
         command  `sleep 0.2 | wc -c | sed s/0/Second/ & sleep 0.1 | wc -c | sed s/0/First/`
         expected `First Second`
         got      `sleep: invalid option -- 'c' Try 'sleep --help' for more information. sleep:...`
@@ -177,18 +177,18 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
         expected `File Done`
         got      `tr: extra operand < Try 'tr --help' for more information. Done`
     Test REDIR3: FAILED in 0.006 sec
-        command  `perl -e 'print STDERR 1854' 2> fREDIR3.txt ; grep '^[1-9]' fREDIR3.txt | wc -l ; rm -f fREDIR3.txt`
+        command  `perl -e 'print STDERR 1861' 2> fREDIR3.txt ; grep '^[1-9]' fREDIR3.txt | wc -l ; rm -f fREDIR3.txt`
         expected `1`
-        got      `1854grep: |: No such file or directory grep: wc: No such file or directory`
+        got      `1861grep: |: No such file or directory grep: wc: No such file or directory`
     Test REDIR4: FAILED in 0.008 sec
-        command  `perl -e 'print STDERR 1854; print STDOUT "X"' > fREDIR4a.txt 2> fREDIR4b.txt ; grep '^[1-9]' fREDIR4a.txt | wc -l ; grep '^[1-9]' fREDIR4b.txt | wc -l ; cmp -s fREDIR4a.txt fREDIR4b.txt || echo Different`
+        command  `perl -e 'print STDERR 1861; print STDOUT "X"' > fREDIR4a.txt 2> fREDIR4b.txt ; grep '^[1-9]' fREDIR4a.txt | wc -l ; grep '^[1-9]' fREDIR4b.txt | wc -l ; cmp -s fREDIR4a.txt fREDIR4b.txt || echo Different`
         expected `0 1 Different`
-        got      `1854Xgrep: fREDIR4b.txt: No such file or directory grep: |: No such file or ...`
+        got      `1861Xgrep: fREDIR4b.txt: No such file or directory grep: |: No such file or ...`
     Test REDIR5: FAILED in 0.003 sec
         command  `tr hb HB < fREDIR5.txt | sort | ../sh0019 -q cmdREDIR5.sh`
         expected `Bye Hello First Good`
         got      `tr: extra operand < Try 'tr --help' for more information.`
-    Test REDIR6: FAILED in 0.016 sec
+    Test REDIR6: FAILED in 0.036 sec
         command  `sort < fREDIR6a.txt > fREDIR6b.txt ; tail -n 2 fREDIR6b.txt ; rm -f fREDIR6a.txt fREDIR6b.txt`
         expected `Bye Hello`
         got      `sort: cannot read: '<': No such file or directory tail: cannot open 'fREDIR6...`
@@ -196,31 +196,31 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
         command  `echo > /tmp/directorydoesnotexist/foo`
         expected `No such file or directory`
         got      `> /tmp/directorydoesnotexist/foo`
-    Test REDIR8: FAILED in 0.004 sec
+    Test REDIR8: FAILED in 0.003 sec
         command  `echo > /tmp/directorydoesnotexist/foo && echo Unwanted`
         expected `No such file or directory`
         got      `> /tmp/directorydoesnotexist/foo Unwanted`
-    Test REDIR9: FAILED in 0.002 sec
+    Test REDIR9: FAILED in 0.003 sec
         command  `echo > /tmp/directorydoesnotexist/foo || echo Wanted`
         expected `No such file or directory Wanted`
         got      `> /tmp/directorydoesnotexist/foo`
-    Test REDIR10: FAILED in 0.002 sec
+    Test REDIR10: FAILED in 0.003 sec
         command  `echo Hello < nonexistentREDIR10.txt`
         expected `No such file or directory`
         got      `Hello < nonexistentREDIR10.txt`
-    Test REDIR11: FAILED in 0.002 sec
+    Test REDIR11: FAILED in 0.003 sec
         command  `echo Hello < nonexistentREDIR11.txt && echo Unwanted`
         expected `No such file or directory`
         got      `Hello < nonexistentREDIR11.txt Unwanted`
-    Test REDIR12: FAILED in 0.002 sec
+    Test REDIR12: FAILED in 0.003 sec
         command  `echo Hello < nonexistentREDIR12.txt || echo Wanted`
         expected `No such file or directory Wanted`
         got      `Hello < nonexistentREDIR12.txt`
-    Test REDIR13: FAILED in 0.002 sec
+    Test REDIR13: FAILED in 0.003 sec
         command  `cat unwanted.txt | cat < wanted.txt`
         expected `Wanted`
         got      `Unwanted cat: '|': No such file or directory cat: cat: No such file or direc...`
-    Test REDIR14: FAILED in 0.002 sec
+    Test REDIR14: FAILED in 0.003 sec
         command  `cat < wanted.txt | cat > output.txt`
         expected `output.txt is Wanted`
         got      `cat: '<': No such file or directory Wanted cat: '|': No such file or directo...`
@@ -228,7 +228,7 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
         command  `cat < xoqted.txt | tr xoq Wan | cat > output.txt`
         expected `output.txt is Wanted`
         got      `cat: '<': No such file or directory xoqted cat: '|': No such file or directo...`
-    Test REDIR16: FAILED in 0.002 sec
+    Test REDIR16: FAILED in 0.003 sec
         command  `echo Ignored | cat < lower.txt | tr A-Z a-z`
         expected `lower`
         got      `Ignored | cat < lower.txt | tr A-Z a-z`
@@ -236,23 +236,23 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
         command  `echo a && sleep 0.2 && echo b`
         expected `a`
         got      `a b`
-    Test INTR2: FAILED in 0.205 sec
+    Test INTR2: FAILED in 0.206 sec
         command  `echo start && sleep 0.2 && echo undesired  \n  echo end`
         expected `start end`
         got      `start undesired end`
-    Test INTR3: FAILED in 0.203 sec
+    Test INTR3: FAILED in 0.204 sec
         command  `sleep 0.3 && echo yes & sleep 0.2 && echo no`
         expected `yes`
         got      `no`
     Test INTR4: FAILED in 1.003 sec
         command  `sleep 1`
         should have completed in 0.150 sec
-    Test INTR5: FAILED in 1.007 sec
+    Test INTR5: FAILED in 1.005 sec
         command  `../sh0019 -q cmdINTR5.sh`
         expected ``
         got      `undesired`
         should have completed in 0.150 sec
-    Test CD1: FAILED in 0.015 sec
+    Test CD1: FAILED in 0.009 sec
         command  `cd / ; pwd`
         expected `/`
         got      `/home/user/out`
@@ -260,7 +260,7 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
         command  `cd / ; cd /usr ; pwd`
         expected `/usr`
         got      `/home/user/out`
-    Test CD3: FAILED in 0.005 sec
+    Test CD3: FAILED in 0.004 sec
         command  `cd / ; cd /doesnotexist 2> /dev/null ; pwd`
         expected `/`
         got      `/home/user/grade/cd: 2: cd: can't cd to /doesnotexist /home/user/out`
@@ -284,13 +284,13 @@ Report for commit SHA: 1d1052eaf7add0146df8ff262cb36d00d4d639b0
         command  `cd / ; cd /doesnotexist 2> /dev/null > /dev/null ; pwd`
         expected `/`
         got      `/home/user/grade/cd: 2: cd: can't cd to /doesnotexist /home/user/out`
-    Test ADVPIPE1: FAILED in 0.301 sec
+    Test ADVPIPE1: FAILED in 0.300 sec
         command  `yes | head -n 5`
         expected `y y y y y`
         got      `| head -n 5 | head -n 5 | head -n 5 | head -n 5 | head -n 5 | head -n 5 | he...`
-      output file size 166395904, expected <= 1000
+      output file size 169670688, expected <= 1000
     Test ADVBGCOND1: passed
-    Test ADVBGCOND2: FAILED in 0.010 sec
+    Test ADVBGCOND2: FAILED in 0.009 sec
         command  `echo first && sleep 0.1 && echo third & sleep 0.05 ; echo second ; sleep 0.1 ; echo fourth`
         expected `first second third fourth`
         got      `third first second fourth`
