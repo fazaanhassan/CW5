@@ -142,7 +142,7 @@ void run_list(command* c) {
     int childFork;
     command* traverseList = c;
     pid_t childID;
-
+    //asdasd
     while (traverseList != NULL) {
         if (traverseList->backgroundProcess == 1) {
              start_command(traverseList, 0);
