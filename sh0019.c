@@ -17,6 +17,7 @@ struct command {
     int chainCommandWithSemi;
     int commandStatus;
     int middleOperator;
+    int nextOperator;
     command* nextCommand;
 };
 command *listHead=NULL;
@@ -142,13 +143,14 @@ void run_list(command* c) {
     int childFork;
     command* traverseList = c;
     pid_t childID;
+    int runningStatus;
     //asdasd
     while (traverseList != NULL) {
         if (traverseList->backgroundProcess == 1) {
              start_command(traverseList, 0);
 
             if(traverseList->middleOperator == TOKEN_AND) {
-                if(WEXITSTATUS(traverseList->commandStatus) == 0) traverseList = traverseList->nextCommand;
+                if( WEXITSTATUS(traverseList->commandStatus) == 0) traverseList = traverseList->nextCommand;
                 else {
                     traverseList = traverseList->nextCommand->nextCommand;
 
@@ -169,17 +171,17 @@ void run_list(command* c) {
             childID = start_command(traverseList, 0);
             waitpid(childID, &status, 0);
 
-            c->commandStatus = status;
-
+            traverseList->commandStatus = status;
             if(traverseList->middleOperator == TOKEN_AND) {
-                if(WEXITSTATUS(traverseList->commandStatus) == 0) traverseList = traverseList->nextCommand;
+                if(traverseList->commandStatus == 0) traverseList = traverseList->nextCommand;
                 else {
                     traverseList = traverseList->nextCommand->nextCommand;
 
                 }
+
             }
             else if (traverseList->middleOperator == TOKEN_OR) {
-                if (WEXITSTATUS(traverseList->commandStatus) != 0) traverseList = traverseList->nextCommand;
+                if (traverseList->commandStatus != 0) traverseList = traverseList->nextCommand;
                 else {
                     traverseList = traverseList->nextCommand->nextCommand;
                 }
@@ -205,13 +207,17 @@ void eval_line(const char* s) {
     int flag = 0;
     // fprintf(stderr, "current test string is %s\n", s );
     command* c = command_alloc();
+    listTail->nextOperator = 10000;
     command* innerHead;
+    command* myHead = c;
     while ((s = parse_shell_token(s, &type, &token)) != NULL) {
         // printf("token is %s \n", token);
 
         if (type == TOKEN_BACKGROUND || type == TOKEN_SEQUENCE || type == TOKEN_OR || type == TOKEN_AND) {
             // listTail->chainCommandWithSemi = 1;
-            listHead->middleOperator = type;
+
+            if (type == TOKEN_OR || type == TOKEN_AND) listTail->middleOperator = type;
+
             if (type == TOKEN_BACKGROUND) {
              // command_alloc();
 
@@ -224,6 +230,8 @@ void eval_line(const char* s) {
                     }
              }
             command_alloc();
+            if (type == TOKEN_OR || type == TOKEN_AND) listTail->nextOperator = type;
+
         }
         else {
             command_append_arg(listTail, token);
@@ -231,18 +239,20 @@ void eval_line(const char* s) {
 
 
     }
+    listTail->nextOperator = 10000;
 
-
-    // execute it
-
-    // while (c != NULL) {
+    //execute it
+    // int nodeCounter = 0;
+    // while (myHead != NULL) {
     //     int counter = 0;
-    //     while(counter < c->argc) {
-    //         fprintf(stderr, "%d %s\n", counter, c->argv[counter]);
+
+    //     fprintf(stderr, "\nnode:%d ",nodeCounter);
+    //     while(counter < myHead->argc) {
+    //         fprintf(stderr, "%s",myHead->argv[counter]);
     //         counter++;
     //     }
-
-    //     c = listHead->nextCommand;
+    //     nodeCounter = nodeCounter + 1;
+    //     myHead = listHead->nextCommand;
     // }
 
     run_list(listHead);
