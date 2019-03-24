@@ -102,7 +102,7 @@ pid_t start_command(command* c, pid_t pgid) {
     pid_t childFork;
     int status;
     int pipeCounter = 0;
-{
+
         childFork = fork();
         if (childFork == 0) {
              execvp(c->argv[0], c->argv);
@@ -177,8 +177,8 @@ void run_list(command* c) {
         }
         else {
            
-            if (skipFlag != 1){
-                 childID = start_command(traverseList, 0);
+            if (skipFlag != 1 || traverseList->nextOperator == 10000){
+                childID = start_command(traverseList, 0);
                 waitpid(childID, &status, 0);
                 traverseList->commandStatus = status;
                 runningStatus = traverseList->commandStatus;
@@ -230,7 +230,6 @@ void eval_line(const char* s) {
     int flag = 0;
     // fprintf(stderr, "current test string is %s\n", s );
     command* c = command_alloc();
-    listTail->nextOperator = 10000;
     command* innerHead;
     command* myHead = c;
     while ((s = parse_shell_token(s, &type, &token)) != NULL) {
