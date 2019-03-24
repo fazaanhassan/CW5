@@ -112,6 +112,7 @@ pid_t start_command(command* c, pid_t pgid) {
         }
 
 
+
         
             // waitpid(c->pid, &status, 0);
             // c->commandStatus = status;
@@ -177,11 +178,11 @@ void run_list(command* c) {
         }
         else {
            
-            if (skipFlag != 1 || traverseList->nextOperator == 10000){
-                childID = start_command(traverseList, 0);
+            if (skipFlag != 1){
+                 childID = start_command(traverseList, 0);
                 waitpid(childID, &status, 0);
                 traverseList->commandStatus = status;
-                runningStatus = traverseList->commandStatus;
+            runningStatus = traverseList->commandStatus;
 
             } 
             // fprintf(stderr, "status is %d \n", traverseList->commandStatus);
