@@ -101,14 +101,16 @@ pid_t start_command(command* c, pid_t pgid) {
     (void) pgid;
     pid_t childFork;
     int status;
-
+    int pipeCounter = 0;
+{
         childFork = fork();
         if (childFork == 0) {
              execvp(c->argv[0], c->argv);
          }
          else if (childFork < 0) {
-            exit(-1);
+            _exit(-1);
         }
+
 
         
             // waitpid(c->pid, &status, 0);
@@ -144,8 +146,14 @@ void run_list(command* c) {
     command* traverseList = c;
     pid_t childID;
     int runningStatus;
+    int skipFlag = 0;
     //asdasd
     while (traverseList != NULL) {
+
+
+        // if (traverseList->middleOperator == TOKEN_PIPE) {
+        //     traverseList->nextCommand;
+        // }
         if (traverseList->backgroundProcess == 1) {
              start_command(traverseList, 0);
 
@@ -168,22 +176,37 @@ void run_list(command* c) {
 
         }
         else {
-            childID = start_command(traverseList, 0);
-            waitpid(childID, &status, 0);
+           
+            if (skipFlag != 1){
+                 childID = start_command(traverseList, 0);
+                waitpid(childID, &status, 0);
+                traverseList->commandStatus = status;
+                runningStatus = traverseList->commandStatus;
 
-            traverseList->commandStatus = status;
+            } 
+            // fprintf(stderr, "status is %d \n", traverseList->commandStatus);
+
             if(traverseList->middleOperator == TOKEN_AND) {
-                if(traverseList->commandStatus == 0) traverseList = traverseList->nextCommand;
+                if(traverseList->commandStatus == 0) {
+                    traverseList = traverseList->nextCommand;
+                    skipFlag = 0;
+                } 
                 else {
-                    traverseList = traverseList->nextCommand->nextCommand;
-
+                    traverseList = traverseList->nextCommand;
+                    traverseList->commandStatus = runningStatus;
+                    skipFlag = 1;
                 }
 
             }
             else if (traverseList->middleOperator == TOKEN_OR) {
-                if (traverseList->commandStatus != 0) traverseList = traverseList->nextCommand;
+                if (traverseList->commandStatus != 0) {
+                        traverseList = traverseList->nextCommand;
+                        skipFlag = 0;
+                }
                 else {
-                    traverseList = traverseList->nextCommand->nextCommand;
+                    traverseList = traverseList->nextCommand;
+                    traverseList->commandStatus = runningStatus;
+                    skipFlag = 1;
                 }
             }
             else {
@@ -213,10 +236,10 @@ void eval_line(const char* s) {
     while ((s = parse_shell_token(s, &type, &token)) != NULL) {
         // printf("token is %s \n", token);
 
-        if (type == TOKEN_BACKGROUND || type == TOKEN_SEQUENCE || type == TOKEN_OR || type == TOKEN_AND) {
+        if (type == TOKEN_BACKGROUND || type == TOKEN_SEQUENCE || type == TOKEN_OR || type == TOKEN_AND || type == TOKEN_PIPE) {
             // listTail->chainCommandWithSemi = 1;
 
-            if (type == TOKEN_OR || type == TOKEN_AND) listTail->middleOperator = type;
+            if (type == TOKEN_OR || type == TOKEN_AND || type == TOKEN_SEQUENCE || type == TOKEN_PIPE) listTail->middleOperator = type;
 
             if (type == TOKEN_BACKGROUND) {
              // command_alloc();
