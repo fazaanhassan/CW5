@@ -177,43 +177,19 @@ void run_list(command* c) {
 
         }
         else {
-
-
-            if(traverseList->nextCommand == NULL && traverseList->nextOperator == TOKEN_AND) {
-
-                if(traverseList->commandStatus == 0) {
-                     childID = start_command(traverseList, 0);
-                     waitpid(childID, &status, 0);
-                     break;   
-                }
-                else {
-                    break;
-                }
-
-            }
-            else if (traverseList->nextCommand == NULL && traverseList->nextOperator == TOKEN_OR) {
-                if(traverseList->commandStatus == 0) {
-                     break;   
-                }
-                else {
-                    childID = start_command(traverseList, 0);
-                     waitpid(childID, &status, 0);
-                    break;
-                }
-            }
-            else if (skipFlag != 1){
-                childID = start_command(traverseList, 0);
+           
+            if (skipFlag != 1){
+                 childID = start_command(traverseList, 0);
                 waitpid(childID, &status, 0);
                 traverseList->commandStatus = status;
-                runningStatus = traverseList->commandStatus;
+            runningStatus = traverseList->commandStatus;
 
             } 
+            // fprintf(stderr, "status is %d \n", traverseList->commandStatus);
 
             if(traverseList->middleOperator == TOKEN_AND) {
                 if(traverseList->commandStatus == 0) {
                     traverseList = traverseList->nextCommand;
-                    traverseList->commandStatus = runningStatus;
-
                     skipFlag = 0;
                 } 
                 else {
@@ -226,8 +202,6 @@ void run_list(command* c) {
             else if (traverseList->middleOperator == TOKEN_OR) {
                 if (traverseList->commandStatus != 0) {
                         traverseList = traverseList->nextCommand;
-                        traverseList->commandStatus = runningStatus;
-
                         skipFlag = 0;
                 }
                 else {
@@ -288,7 +262,7 @@ void eval_line(const char* s) {
 
 
     }
-    
+    listTail->nextOperator = 10000;
 
     //execute it
     // int nodeCounter = 0;
@@ -312,7 +286,7 @@ void eval_line(const char* s) {
 int main(int argc, char* argv[]) {
     FILE* command_file = stdin;
     int quiet = 0;
-
+    // check score
     // Check for '-q' option: be quiet (print no prompts)
     if (argc > 1 && strcmp(argv[1], "-q") == 0) {
         quiet = 1;
