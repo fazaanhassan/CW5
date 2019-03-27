@@ -96,10 +96,7 @@ pid_t start_command(command* c, pid_t pgid) {
     }
     
     // fprintf(stderr, "piping... %s\n pipeCounterMax is: %d\n", c->argv[0], pipeCounterMax);  
-  if (strcmp(c->argv[0], "cd") == 0) {
-    chdir(c->argv[1]);
-    return;
-  }
+
 
   if(c->middleOperator == TOKEN_PIPE){
     pipe(firstPfds);
@@ -283,6 +280,7 @@ void eval_line(const char* s) {
 
 
 int main(int argc, char* argv[]) {
+    //lets finish this! SUBMIIIITTTTTT
     FILE* command_file = stdin;
     int quiet = 0;
     // check score
