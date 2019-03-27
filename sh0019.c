@@ -34,6 +34,7 @@ static command* command_alloc(void) {
     c->backgroundProcess = 0;
     c->chainCommandWithSemi = 0;
     c->commandStatus = -1;
+
     if(listHead==NULL) {
         listHead=c;
         listTail=c;
@@ -78,40 +79,69 @@ static void command_append_arg(command* c, char* word) {
 }
 
 
-// COMMAND EVALUATION
-
-// start_command(c, pgid)
-//    Start the single command indicated by `c`. Sets `c->pid` to the child
-//    process running the command, and returns `c->pid`.
-//
-//    PART 1: Fork a child process and run the command using `execvp`.
-//    PART 5: Set up a pipeline if appropriate. This may require creating a
-//       new pipe (`pipe` system call), and/or replacing the child process's
-//       standard input/output with parts of the pipe (`dup2` and `close`).
-//       Draw pictures!
-//    PART 7: Handle redirections.
-//    PART 8: The child process should be in the process group `pgid`, or
-//       its own process group (if `pgid == 0`). To avoid race conditions,
-//       this will require TWO calls to `setpgid`.
-
-
-
 pid_t start_command(command* c, pid_t pgid) {
     //testing stuff
     (void) pgid;
     pid_t childFork;
     int status;
-    int pipeCounter = 0;
+    int pipeCounter = 1;
+    int firstPfds[2];
+    int secondPfds[2];
+  
+    command* countHead = c;
+    int pipeCounterMax = 1;
+    while( countHead->middleOperator == TOKEN_PIPE ) {
+       pipeCounterMax++;
+      countHead = countHead->nextCommand;
+    }
+    
+    // fprintf(stderr, "piping... %s\n pipeCounterMax is: %d\n", c->argv[0], pipeCounterMax);  
+  if (strcmp(c->argv[0], "cd") == 0) {
+    chdir(c->argv[1]);
+    return;
+  }
 
-        childFork = fork();
-        if (childFork == 0) {
-             execvp(c->argv[0], c->argv);
-         }
-         else if (childFork < 0) {
-            _exit(-1);
+  if(c->middleOperator == TOKEN_PIPE){
+    pipe(firstPfds);
+    while(pipeCounter <= pipeCounterMax) {
+        pipe(secondPfds);
+        // fprintf(stderr, "pipeCounter is: %d piping %s\n", pipeCounter, c->argv[0]);
+
+      childFork = fork();
+      if(childFork == 0){
+        close(firstPfds[1]);
+        if(pipeCounter > 1){
+            dup2(firstPfds[0], 0);
         }
+        
+        if(pipeCounter != pipeCounterMax){
+            dup2(secondPfds[1], 1);
+        }
+        close(firstPfds[0]);
+        close(secondPfds[1]);
+        close(secondPfds[1]);
+        
+        execvp(c->argv[0], c->argv);
+        
+      }
+      
+      pipeCounter++;
+      firstPfds[0] = secondPfds[0];
+      firstPfds[1] = secondPfds[1];
+      if(c->nextCommand == NULL) break;
+      c = c->nextCommand;
 
-
+    }
+  } else {
+    
+    childFork = fork();
+    if (childFork == 0) {
+        execvp(c->argv[0], c->argv);
+     }
+     else if (childFork < 0) {
+        _exit(-1);
+    }
+  } 
 
         
             // waitpid(c->pid, &status, 0);
@@ -119,27 +149,8 @@ pid_t start_command(command* c, pid_t pgid) {
     // Your code here!
     // fprintf(stderr, "start_command not done yet\n");
     return c->pid;
-   }
+}
 
-
-
-// run_list(c)
-//    Run the command list starting at `c`.
-//
-//    PART 1: Start the single command `c` with `start_command`,
-//        and wait for it to finish using `waitpid`.
-//    The remaining parts may require that you change `struct command`
-//    (e.g., to track whether a command is in the background)
-//    and write code in run_list (or in helper functions!).
-//    PART 2: Treat background commands differently.
-//    PART 3: Introduce a loop to run all commands in the list.
-//    PART 4: Change the loop to handle conditionals.
-//    PART 5: Change the loop to handle pipelines. Start all processes in
-//       the pipeline in parallel. The status of a pipeline is the status of
-//       its LAST command.
-//    PART 8: - Choose a process group for each pipeline.
-//       - Call `claim_foreground(pgid)` before waiting for the pipeline.
-//       - Call `claim_foreground(0)` once the pipeline is complete.
 
 void run_list(command* c) {
     int status;
@@ -179,10 +190,16 @@ void run_list(command* c) {
         else {
            
             if (skipFlag != 1){
-                 childID = start_command(traverseList, 0);
+                childID = start_command(traverseList, 0);
+                while (traverseList->middleOperator == TOKEN_PIPE) {
+                    traverseList = traverseList -> nextCommand;
+                }
+                // traverseList = traverseList -> nextCommand;
+
                 waitpid(childID, &status, 0);
+                if (traverseList == NULL) break;
                 traverseList->commandStatus = status;
-            runningStatus = traverseList->commandStatus;
+                runningStatus = traverseList->commandStatus;
 
             } 
             // fprintf(stderr, "status is %d \n", traverseList->commandStatus);
@@ -221,10 +238,6 @@ void run_list(command* c) {
 }
 
 
-
-// eval_line(c)
-//    Parse the command list in `s` and run it via `run_list`.
-
 void eval_line(const char* s) {
     int type;
     char* token;
@@ -253,6 +266,7 @@ void eval_line(const char* s) {
                     }
              }
             command_alloc();
+
             if (type == TOKEN_OR || type == TOKEN_AND) listTail->nextOperator = type;
 
         }
@@ -263,21 +277,6 @@ void eval_line(const char* s) {
 
     }
     listTail->nextOperator = 10000;
-
-    //execute it
-    // int nodeCounter = 0;
-    // while (myHead != NULL) {
-    //     int counter = 0;
-
-    //     fprintf(stderr, "\nnode:%d ",nodeCounter);
-    //     while(counter < myHead->argc) {
-    //         fprintf(stderr, "%s",myHead->argv[counter]);
-    //         counter++;
-    //     }
-    //     nodeCounter = nodeCounter + 1;
-    //     myHead = listHead->nextCommand;
-    // }
-
     run_list(listHead);
     command_free(listHead);
 }
